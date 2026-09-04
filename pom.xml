@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- SPRING BOOT -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -16,77 +12,56 @@
         <relativePath/>
     </parent>
 
-    <!-- IDENTIFICAÇÃO DO PROJETO -->
     <groupId>br.com.conectadoa</groupId>
     <artifactId>ConectaDoaAEP</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>ConectaDoaAEP</name>
-
     <description>
         API REST para gerenciamento de doações de alimentos,
         desenvolvida como Prova de Conceito da AEP.
     </description>
 
-    <!-- CONFIGURAÇÕES -->
     <properties>
-
         <java.version>21</java.version>
-
         <springdoc.version>2.9.0</springdoc.version>
-
     </properties>
 
-
-    <!-- DEPENDÊNCIAS -->
     <dependencies>
 
-        <!-- API REST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-
-        <!-- MONGODB -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
 
-
-        <!-- VALIDAÇÕES -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-
-        <!-- SWAGGER / OPENAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
 
-
-        <!-- TESTES -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-
-        <!-- TESTCONTAINERS -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 
-
-        <!-- TESTCONTAINERS MONGODB -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mongodb</artifactId>
@@ -95,272 +70,83 @@
 
     </dependencies>
 
-
-    <!-- BUILD -->
     <build>
-
         <plugins>
 
-            <!-- SPRING BOOT -->
             <plugin>
-
                 <groupId>org.springframework.boot</groupId>
-
-                <artifactId>
-                    spring-boot-maven-plugin
-                </artifactId>
-
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-
-            <!-- TESTES DE INTEGRAÇÃO -->
             <plugin>
-
-                <groupId>
-                    org.apache.maven.plugins
-                </groupId>
-
-                <artifactId>
-                    maven-failsafe-plugin
-                </artifactId>
-
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
-
                     <execution>
-
                         <goals>
-
-                            <goal>
-                                integration-test
-                            </goal>
-
-                            <goal>
-                                verify
-                            </goal>
-
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
                         </goals>
-
                     </execution>
-
                 </executions>
-
             </plugin>
 
-
-            <!-- COBERTURA DE TESTES -->
             <plugin>
-
-                <groupId>
-                    org.jacoco
-                </groupId>
-
-                <artifactId>
-                    jacoco-maven-plugin
-                </artifactId>
-
-                <version>
-                    0.8.15
-                </version>
-
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.15</version>
 
                 <configuration>
-
-                    <append>
-                        true
-                    </append>
-
-                    <!--
-                    Classes que não fazem parte das
-                    regras de negócio da PoC.
-                    -->
-
+                    <append>true</append>
                     <excludes>
-
-                        <!-- Classe principal -->
-                        <exclude>
-                            br/com/conectadoa/ConectaDoaApplication.class
-                        </exclude>
-
-                        <!-- Configurações -->
-                        <exclude>
-                            br/com/conectadoa/configuration/**
-                        </exclude>
-
+                        <exclude>br/com/conectadoa/ConectaDoaApplication.class</exclude>
+                        <exclude>br/com/conectadoa/configuration/**</exclude>
                     </excludes>
-
                 </configuration>
-
 
                 <executions>
 
-
-                    <!-- ATIVA O JACOCO -->
                     <execution>
-
-                        <id>
-                            prepare-agent
-                        </id>
-
+                        <id>prepare-agent</id>
                         <goals>
-
-                            <goal>
-                                prepare-agent
-                            </goal>
-
+                            <goal>prepare-agent</goal>
                         </goals>
-
                     </execution>
 
-
-                    <!-- GERA O RELATÓRIO -->
                     <execution>
-
-                        <id>
-                            coverage-report
-                        </id>
-
-                        <phase>
-                            verify
-                        </phase>
-
+                        <id>coverage-report</id>
+                        <phase>verify</phase>
                         <goals>
-
-                            <goal>
-                                report
-                            </goal>
-
+                            <goal>report</goal>
                         </goals>
-
                     </execution>
 
-
-                    <!-- VERIFICA COBERTURA MÍNIMA -->
                     <execution>
-
-                        <id>
-                            coverage-check
-                        </id>
-
-                        <phase>
-                            verify
-                        </phase>
-
+                        <id>coverage-check</id>
+                        <phase>verify</phase>
                         <goals>
-
-                            <goal>
-                                check
-                            </goal>
-
+                            <goal>check</goal>
                         </goals>
-
                         <configuration>
-
                             <rules>
-
                                 <rule>
-
-                                    <element>
-                                        BUNDLE
-                                    </element>
-
+                                    <element>BUNDLE</element>
                                     <limits>
-
                                         <limit>
-
-                                            <counter>
-                                                LINE
-                                            </counter>
-
-                                            <value>
-                                                COVEREDRATIO
-                                            </value>
-
-                                            <minimum>
-                                                0.70
-                                            </minimum>
-
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.70</minimum>
                                         </limit>
-
                                     </limits>
-
                                 </rule>
-
                             </rules>
-
                         </configuration>
-
                     </execution>
 
                 </executions>
-
             </plugin>
 
         </plugins>
-
     </build>
 
 </project>
-=======
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.1</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>com.AEP</groupId>
-	<artifactId>1BIM</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
-	<properties>
-		<java.version>21</java.version>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
-</project>
->>>>>>> origin/main
