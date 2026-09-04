@@ -13,8 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(br.com.conectadoa.exception.DoacaoNotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(br.com.conectadoa.exception.DoacaoNotFoundException exception, HttpServletRequest request) {
+    @ExceptionHandler(com.AEP._BIM.exception.DoacaoNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(com.AEP._BIM.exception.DoacaoNotFoundException exception, HttpServletRequest request) {
         return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request.getRequestURI(), Map.of());
     }
 
