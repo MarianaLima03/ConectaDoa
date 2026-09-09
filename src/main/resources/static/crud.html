@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CRUD de Doações - ConectaDoa</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f5f7f5;
+            color: #222;
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: auto;
+            padding: 32px;
+        }
+
+        h1,
+        h2 {
+            color: #237a46;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px #0001;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+        }
+
+        button {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border: 0;
+            border-radius: 8px;
+            background: #237a46;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .secondary {
+            background: #666;
+        }
+
+        .danger {
+            background: #b6403a;
+        }
+
+        .item {
+            border-bottom: 1px solid #ddd;
+            padding: 14px 0;
+        }
+
+        .actions button {
+            margin-right: 8px;
+        }
+
+        .msg {
+            margin-top: 12px;
+            color: #b6403a;
+        }
+
+        @media (max-width: 800px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="wrap">
+
+    <h1>ConectaDoa — CRUD de Doações</h1>
+
+    <div class="grid">
+
+        <section class="card">
+
+            <h2 id="formTitle">
+                Nova doação
+            </h2>
+
+            <form id="form">
+
+                <input
+                        type="hidden"
+                        id="id"
+                        name="id"
+                >
+
+                <label for="alimento">
+                    Alimento
+                </label>
+
+                <input
+                        id="alimento"
+                        name="alimento"
+                        type="text"
+                        required
+                >
+
+                <label for="quantidade">
+                    Quantidade
+                </label>
+
+                <input
+                        id="quantidade"
+                        name="quantidade"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required
+                >
+
+                <label for="unidade">
+                    Unidade
+                </label>
+
+                <input
+                        id="unidade"
+                        name="unidade"
+                        type="text"
+                        placeholder="kg, unidades..."
+                        required
+                >
+
+                <label for="validade">
+                    Validade
+                </label>
+
+                <input
+                        id="validade"
+                        name="validade"
+                        type="date"
+                        required
+                >
+
+                <label for="doadorNome">
+                    Nome do doador
+                </label>
+
+                <input
+                        id="doadorNome"
+                        name="doadorNome"
+                        type="text"
+                        required
+                >
+
+                <label for="doadorContato">
+                    Contato do doador
+                </label>
+
+                <input
+                        id="doadorContato"
+                        name="doadorContato"
+                        type="text"
+                        required
+                >
+
+                <button type="submit">
+                    Salvar
+                </button>
+
+                <button
+                        type="button"
+                        id="btnCancelar"
+                        class="secondary"
+                >
+                    Cancelar
+                </button>
+
+                <div
+                        class="msg"
+                        id="msg"
+                        role="alert"
+                        aria-live="polite"
+                ></div>
+
+            </form>
+
+        </section>
+
+        <section class="card">
+
+            <h2>
+                Doações cadastradas
+            </h2>
+
+            <div
+                    id="lista"
+                    aria-live="polite"
+            >
+                Carregando...
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<script>
+
+    const API = "/api/doacoes";
+
+    const form =
+        document.getElementById("form");
+
+    const campoId =
+        document.getElementById("id");
+
+    const campoAlimento =
+        document.getElementById("alimento");
+
+    const campoQuantidade =
+        document.getElementById("quantidade");
+
+    const campoUnidade =
+        document.getElementById("unidade");
+
+    const campoValidade =
+        document.getElementById("validade");
+
+    const campoDoadorNome =
+        document.getElementById("doadorNome");
+
+    const campoDoadorContato =
+        document.getElementById("doadorContato");
+
+    const tituloFormulario =
+        document.getElementById("formTitle");
+
+    const mensagem =
+        document.getElementById("msg");
+
+    const lista =
+        document.getElementById("lista");
+
+    const botaoCancelar =
+        document.getElementById("btnCancelar");
+
+
+    function limparFormulario() {
+
+        form.reset();
+
+        campoId.value = "";
+
+        tituloFormulario.textContent =
+            "Nova doação";
+
+        mensagem.textContent = "";
+    }
+
+
+    function editarDoacao(doacao) {
+
+        campoId.value =
+            doacao.id;
+
+        campoAlimento.value =
+            doacao.alimento;
+
+        campoQuantidade.value =
+            doacao.quantidade;
+
+        campoUnidade.value =
+            doacao.unidade;
+
+        campoValidade.value =
+            doacao.validade;
+
+        campoDoadorNome.value =
+            doacao.doadorNome;
+
+        campoDoadorContato.value =
+            doacao.doadorContato;
+
+        tituloFormulario.textContent =
+            "Editar doação";
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+
+    async function excluirDoacao(id) {
+
+        const confirmou =
+            window.confirm(
+                "Deseja realmente excluir esta doação?"
+            );
+
+        if (!confirmou) {
+            return;
+        }
+
+        try {
+
+            const resposta =
+                await fetch(
+                    `${API}/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+            if (!resposta.ok) {
+
+                throw new Error(
+                    "Não foi possível excluir a doação."
+                );
+            }
+
+            await listarDoacoes();
+
+        } catch (erro) {
+
+            console.error(erro);
+
+            mensagem.textContent =
+                "Erro ao excluir a doação.";
+        }
+    }
+
+
+    function criarItemDoacao(doacao) {
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "item";
+
+
+        const titulo =
+            document.createElement("strong");
+
+        titulo.textContent =
+            doacao.alimento;
+
+
+        const informacoes =
+            document.createElement("p");
+
+        informacoes.textContent =
+            `${doacao.quantidade} ${doacao.unidade} — validade: ${doacao.validade}`;
+
+
+        const doador =
+            document.createElement("p");
+
+        doador.textContent =
+            `Doador: ${doacao.doadorNome} — ${doacao.doadorContato}`;
+
+
+        const acoes =
+            document.createElement("div");
+
+        acoes.className =
+            "actions";
+
+
+        const botaoEditar =
+            document.createElement("button");
+
+        botaoEditar.type =
+            "button";
+
+        botaoEditar.textContent =
+            "Editar";
+
+        botaoEditar.addEventListener(
+            "click",
+            () => editarDoacao(doacao)
+        );
+
+
+        const botaoExcluir =
+            document.createElement("button");
+
+        botaoExcluir.type =
+            "button";
+
+        botaoExcluir.textContent =
+            "Excluir";
+
+        botaoExcluir.className =
+            "danger";
+
+        botaoExcluir.addEventListener(
+            "click",
+            async () => {
+                await excluirDoacao(doacao.id);
+            }
+        );
+
+
+        acoes.appendChild(
+            botaoEditar
+        );
+
+        acoes.appendChild(
+            botaoExcluir
+        );
+
+
+        div.appendChild(
+            titulo
+        );
+
+        div.appendChild(
+            informacoes
+        );
+
+        div.appendChild(
+            doador
+        );
+
+        div.appendChild(
+            acoes
+        );
+
+
+        return div;
+    }
+
+
+    async function listarDoacoes() {
+
+        lista.textContent =
+            "Carregando...";
+
+        try {
+
+            const resposta =
+                await fetch(API);
+
+            if (!resposta.ok) {
+
+                throw new Error(
+                    "Erro ao buscar doações."
+                );
+            }
+
+            const itens =
+                await resposta.json();
+
+
+            lista.replaceChildren();
+
+
+            if (itens.length === 0) {
+
+                const mensagemVazia =
+                    document.createElement("p");
+
+                mensagemVazia.textContent =
+                    "Nenhuma doação cadastrada.";
+
+                lista.appendChild(
+                    mensagemVazia
+                );
+
+                return;
+            }
+
+
+            for (const item of itens) {
+
+                const respostaDetalhes =
+                    await fetch(
+                        `${API}/${item.id}`
+                    );
+
+                if (!respostaDetalhes.ok) {
+                    continue;
+                }
+
+                const doacao =
+                    await respostaDetalhes.json();
+
+                const elemento =
+                    criarItemDoacao(doacao);
+
+                lista.appendChild(
+                    elemento
+                );
+            }
+
+        } catch (erro) {
+
+            console.error(erro);
+
+            lista.textContent =
+                "Não foi possível carregar as doações.";
+        }
+    }
+
+
+    form.addEventListener(
+        "submit",
+        async (evento) => {
+
+            evento.preventDefault();
+
+            mensagem.textContent = "";
+
+
+            const dados = {
+
+                alimento:
+                    campoAlimento.value,
+
+                quantidade:
+                    Number(
+                        campoQuantidade.value
+                    ),
+
+                unidade:
+                    campoUnidade.value,
+
+                validade:
+                    campoValidade.value,
+
+                doadorNome:
+                    campoDoadorNome.value,
+
+                doadorContato:
+                    campoDoadorContato.value
+            };
+
+
+            const id =
+                campoId.value;
+
+
+            const url =
+                id
+                    ? `${API}/${id}`
+                    : API;
+
+
+            const metodo =
+                id
+                    ? "PUT"
+                    : "POST";
+
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        url,
+                        {
+                            method: metodo,
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(dados)
+                        }
+                    );
+
+
+                if (!resposta.ok) {
+
+                    let mensagemErro =
+                        "Erro ao salvar a doação.";
+
+                    try {
+
+                        const erro =
+                            await resposta.json();
+
+                        if (erro.message) {
+                            mensagemErro =
+                                erro.message;
+                        }
+
+                    } catch {
+                        console.error(
+                            "Não foi possível interpretar a resposta de erro."
+                        );
+                    }
+
+                    mensagem.textContent =
+                        mensagemErro;
+
+                    return;
+                }
+
+
+                limparFormulario();
+
+                await listarDoacoes();
+
+            } catch (erro) {
+
+                console.error(erro);
+
+                mensagem.textContent =
+                    "Não foi possível salvar a doação.";
+            }
+        }
+    );
+
+
+    botaoCancelar.addEventListener(
+        "click",
+        limparFormulario
+    );
+
+
+    window.addEventListener(
+        "DOMContentLoaded",
+        async () => {
+            await listarDoacoes();
+        }
+    );
+
+</script>
+
+</body>
+
+</html>
