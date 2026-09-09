@@ -1,0 +1,514 @@
+<!doctype html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1">
+
+    <title>CRUD ConectaDoa</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f5f7f5;
+            color: #222;
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: auto;
+            padding: 32px;
+        }
+
+        h1 {
+            color: #237a46;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px #0001;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+        }
+
+        button {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border: 0;
+            border-radius: 8px;
+            background: #237a46;
+            color: white;
+            cursor: pointer;
+        }
+
+        .secondary {
+            background: #666;
+        }
+
+        .danger {
+            background: #b6403a;
+        }
+
+        .item {
+            border-bottom: 1px solid #ddd;
+            padding: 14px 0;
+        }
+
+        .actions button {
+            margin-right: 8px;
+        }
+
+        .msg {
+            margin-top: 12px;
+            color: #b6403a;
+        }
+
+        @media(max-width:800px) {
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="wrap">
+
+    <h1>ConectaDoa — CRUD de Doações</h1>
+
+
+    <div class="grid">
+
+
+        <div class="card">
+
+            <h2 id="formTitle">
+                Nova doação
+            </h2>
+
+
+            <form id="form">
+
+                <input
+                        type="hidden"
+                        id="id">
+
+
+                <label>
+                    Alimento
+                </label>
+
+                <input
+                        id="alimento"
+                        required>
+
+
+                <label>
+                    Quantidade
+                </label>
+
+                <input
+                        id="quantidade"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required>
+
+
+                <label>
+                    Unidade
+                </label>
+
+                <input
+                        id="unidade"
+                        placeholder="kg, unidades..."
+                        required>
+
+
+                <label>
+                    Validade
+                </label>
+
+                <input
+                        id="validade"
+                        type="date"
+                        required>
+
+
+                <label>
+                    Nome do doador
+                </label>
+
+                <input
+                        id="doadorNome"
+                        required>
+
+
+                <label>
+                    Contato do doador
+                </label>
+
+                <input
+                        id="doadorContato"
+                        required>
+
+
+                <button type="submit">
+                    Salvar
+                </button>
+
+
+                <button
+                        type="button"
+                        class="secondary"
+                        onclick="limpar()">
+
+                    Cancelar
+
+                </button>
+
+
+                <div
+                        class="msg"
+                        id="msg">
+                </div>
+
+
+            </form>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>
+                Doações cadastradas
+            </h2>
+
+            <div id="lista">
+                Carregando...
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const API = '/api/doacoes';
+
+
+    const form =
+        document.getElementById('form');
+
+
+    async function listar() {
+
+        const r =
+            await fetch(API);
+
+        const itens =
+            await r.json();
+
+        const lista =
+            document.getElementById('lista');
+
+
+        lista.innerHTML = '';
+
+
+        if (!itens.length) {
+
+            lista.innerHTML =
+                '<p>Nenhuma doação cadastrada.</p>';
+
+            return;
+
+        }
+
+
+        for (const item of itens) {
+
+            const completo =
+                await (
+                    await fetch(
+                        `${API}/${item.id}`
+                    )
+                ).json();
+
+
+            const div =
+                document.createElement('div');
+
+
+            div.className =
+                'item';
+
+
+            div.innerHTML = `
+
+                <strong>
+                    ${completo.alimento}
+                </strong>
+
+                <br>
+
+                ${completo.quantidade}
+                ${completo.unidade}
+
+                —
+
+                validade
+                ${completo.validade}
+
+                <br>
+
+                Doador:
+                ${completo.doadorNome}
+
+                —
+
+                ${completo.doadorContato}
+
+
+                <div class="actions">
+
+                    <button
+                        onclick='editar(
+                            ${JSON.stringify(completo)}
+                        )'>
+
+                        Editar
+
+                    </button>
+
+
+                    <button
+                        class="danger"
+                        onclick="excluir(
+                            '${completo.id}'
+                        )">
+
+                        Excluir
+
+                    </button>
+
+                </div>
+
+            `;
+
+
+            lista.appendChild(div);
+
+        }
+
+    }
+
+
+
+    function editar(d) {
+
+        id.value =
+            d.id;
+
+        alimento.value =
+            d.alimento;
+
+        quantidade.value =
+            d.quantidade;
+
+        unidade.value =
+            d.unidade;
+
+        validade.value =
+            d.validade;
+
+        doadorNome.value =
+            d.doadorNome;
+
+        doadorContato.value =
+            d.doadorContato;
+
+
+        formTitle.textContent =
+            'Editar doação';
+
+    }
+
+
+
+    function limpar() {
+
+        form.reset();
+
+        id.value = '';
+
+        formTitle.textContent =
+            'Nova doação';
+
+        msg.textContent = '';
+
+    }
+
+
+
+    form.addEventListener(
+        'submit',
+
+        async e => {
+
+            e.preventDefault();
+
+
+            const data = {
+
+                alimento:
+                    alimento.value,
+
+                quantidade:
+                    Number(
+                        quantidade.value
+                    ),
+
+                unidade:
+                    unidade.value,
+
+                validade:
+                    validade.value,
+
+                doadorNome:
+                    doadorNome.value,
+
+                doadorContato:
+                    doadorContato.value
+
+            };
+
+
+            const edit =
+                id.value;
+
+
+            const r =
+                await fetch(
+
+                    edit
+                        ? `${API}/${edit}`
+                        : API,
+
+                    {
+
+                        method:
+                            edit
+                                ? 'PUT'
+                                : 'POST',
+
+                        headers: {
+
+                            'Content-Type':
+                                'application/json'
+
+                        },
+
+                        body:
+                            JSON.stringify(data)
+
+                    }
+
+                );
+
+
+            if (!r.ok) {
+
+                const err =
+                    await r.json();
+
+
+                msg.textContent =
+                    err.message
+                    || 'Erro ao salvar';
+
+                return;
+
+            }
+
+
+            limpar();
+
+            listar();
+
+        }
+
+    );
+
+
+
+    async function excluir(id) {
+
+        if (
+            confirm(
+                'Excluir esta doação?'
+            )
+        ) {
+
+            await fetch(
+                `${API}/${id}`,
+                {
+                    method:
+                        'DELETE'
+                }
+            );
+
+
+            listar();
+
+        }
+
+    }
+
+
+    listar();
+
+</script>
+
+
+</body>
+
+</html>
