@@ -1,8 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>ConectaDoa</title>
 
@@ -27,6 +28,10 @@
             box-shadow: 0 6px 24px #0001;
         }
 
+        .buttons {
+            margin-top: 20px;
+        }
+
         a {
             display: inline-block;
             margin: 8px 8px 0 0;
@@ -36,39 +41,53 @@
             text-decoration: none;
             border-radius: 9px;
         }
+
+        a:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 
 <body>
 
-<div class="box">
+<main class="box">
 
     <h1>ConectaDoa</h1>
 
     <p>
-        PoC para conectar doadores de alimentos
-        a pessoas e instituições interessadas.
+        Prova de Conceito desenvolvida para conectar pessoas e estabelecimentos
+        que possuem alimentos disponíveis para doação com pessoas ou instituições
+        interessadas em recebê-los.
+    </p>
+
+    <h2>Objetivos de Desenvolvimento Sustentável</h2>
+
+    <p>
+        <strong>ODS 2 — Fome Zero e Agricultura Sustentável:</strong>
+        o sistema facilita a redistribuição de alimentos disponíveis para doação,
+        contribuindo para o enfrentamento da insegurança alimentar.
     </p>
 
     <p>
-        <strong>ODS 2:</strong>
-        Fome Zero e Agricultura Sustentável
-
-        <br>
-
-        <strong>ODS 12:</strong>
-        Consumo e Produção Responsáveis
+        <strong>ODS 12 — Consumo e Produção Responsáveis:</strong>
+        alimentos que poderiam ser desperdiçados podem ser reaproveitados
+        por meio da doação.
     </p>
 
-    <a href="/crud.html">
-        Abrir CRUD
-    </a>
+    <div class="buttons">
 
-    <a href="/docs">
-        Swagger / API
-    </a>
+        <a href="/crud.html">
+            Abrir CRUD de Doações
+        </a>
 
-</div>
+        <a href="/docs">
+            Acessar Swagger
+        </a>
+
+    </div>
+
+</main>
 
 </body>
+
 </html>
