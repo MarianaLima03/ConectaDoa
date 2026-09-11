@@ -33,7 +33,7 @@ Banco: `conectadoa`
 ## Execução
 Com o MongoDB local em `localhost:27017`, execute a aplicação `ConectaDoaApplication`.
 
-A aplicação usa a porta `8081`.
+A aplicação usa a porta `8080`.
 
 - Página inicial: http://localhost:8081/
 - CRUD web: http://localhost:8081/crud.html
