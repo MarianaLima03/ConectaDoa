@@ -35,9 +35,9 @@ Com o MongoDB local em `localhost:27017`, execute a aplicação `ConectaDoaAppli
 
 A aplicação usa a porta `8080`.
 
-- Página inicial: http://localhost:8081/
-- CRUD web: http://localhost:8081/crud.html
-- Swagger: http://localhost:8081/docs
+- Página inicial: http://localhost:8080/
+- CRUD web: http://localhost:8080/crud.html
+- Swagger: http://localhost:8080/docs
 
 ## Endpoints
 | Método | Endpoint | Função |
