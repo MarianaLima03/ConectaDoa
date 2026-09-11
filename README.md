@@ -37,7 +37,7 @@ A aplicação usa a porta `8080`.
 
 - Página inicial: http://localhost:8080/
 - CRUD web: http://localhost:8080/crud.html
-- Swagger: http://localhost:8080/docs
+- Swagger: http://localhost:8080/swagger-ui.html
 
 ## Endpoints
 | Método | Endpoint | Função |
