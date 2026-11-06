@@ -13,9 +13,14 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(com.AEP._BIM.exception.DoacaoNotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(com.AEP._BIM.exception.DoacaoNotFoundException exception, HttpServletRequest request) {
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ResponseEntity<ApiError> handleNotFound(RecursoNaoEncontradoException exception, HttpServletRequest request) {
         return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(RegraNegocioException.class)
+    public ResponseEntity<ApiError> handleRegraNegocio(RegraNegocioException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request.getRequestURI(), Map.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
