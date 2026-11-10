@@ -10,10 +10,10 @@ public record DoacaoResponse(
         Double quantidade,
         String unidade,
         LocalDate validade,
+        String doadorId,
         String doadorNome,
         String doadorContato,
         StatusDoacao status,
-        String reservadoPor,
-        String contatoReserva
+        ReservaResponse reserva
 ) {
 }

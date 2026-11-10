@@ -11,4 +11,10 @@ public interface DoacaoRepository
         extends MongoRepository<Doacao, String> {
 
     List<Doacao> findByStatus(StatusDoacao status);
+
+    List<Doacao> findByDoadorId(String doadorId);
+
+    boolean existsByDoadorId(String doadorId);
+
+    boolean existsByReservaInstituicaoId(String instituicaoId);
 }

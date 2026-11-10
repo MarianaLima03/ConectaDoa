@@ -7,7 +7,6 @@ import com.AEP._BIM.dto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import com.AEP._BIM.dto.*;
 import com.AEP._BIM.service.DoacaoService;
 import jakarta.validation.Valid;
 
@@ -30,13 +29,19 @@ public class DoacaoController {
     public List<DoacaoSummaryResponse> listarDisponiveis() {
         return service.listarDisponiveis();
     }
+
+    @GetMapping("/doador/{doadorId}")
+    public List<DoacaoSummaryResponse> listarPorDoador(@PathVariable String doadorId) {
+        return service.listarPorDoador(doadorId);
+    }
+
     @GetMapping("/{id}")
     public DoacaoResponse buscarPorId(@PathVariable String id) {
         return service.buscarPorId(id);
     }
 
     @PostMapping
-    public ResponseEntity<DoacaoResponse> criar(@Valid @RequestBody DoacaoCreateRequest request) {
+    public ResponseEntity<DoacaoResponse> criar(@Valid @RequestBody DoacaoRequest request) {
         DoacaoResponse response = service.criar(request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(response.id()).toUri();
@@ -44,7 +49,7 @@ public class DoacaoController {
     }
 
     @PutMapping("/{id}")
-    public DoacaoResponse atualizar(@PathVariable String id, @Valid @RequestBody DoacaoUpdateRequest request) {
+    public DoacaoResponse atualizar(@PathVariable String id, @Valid @RequestBody DoacaoRequest request) {
         return service.atualizar(id, request);
     }
 
@@ -53,11 +58,17 @@ public class DoacaoController {
         service.excluir(id);
         return ResponseEntity.noContent().build();
     }
+
     @PutMapping("/{id}/reservar")
     public DoacaoResponse reservar(
             @PathVariable String id,
-            @RequestBody ReservaRequest request) {
+            @Valid @RequestBody ReservaRequest request) {
 
         return service.reservar(id, request);
+    }
+
+    @PutMapping("/{id}/retirar")
+    public DoacaoResponse retirar(@PathVariable String id) {
+        return service.registrarRetirada(id);
     }
 }

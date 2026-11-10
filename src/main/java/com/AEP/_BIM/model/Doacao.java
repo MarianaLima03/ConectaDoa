@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.AEP._BIM.exception.RegraNegocioException;
+
 @Document(collection = "doacoes")
 public class Doacao {
 
@@ -13,24 +15,44 @@ public class Doacao {
     private Double quantidade;
     private String unidade;
     private LocalDate validade;
-    private String doadorNome;
-    private String doadorContato;
+    private String doadorId;
     private StatusDoacao status;
-    private String reservadoPor;
-    private String contatoReserva;
+    private Reserva reserva;
 
     public Doacao(String id, String alimento, Double quantidade, String unidade,
-                  LocalDate validade, String doadorNome, String doadorContato,
-                  StatusDoacao status) {
+                  LocalDate validade, String doadorId, StatusDoacao status) {
 
         this.id = id;
         this.alimento = alimento;
         this.quantidade = quantidade;
         this.unidade = unidade;
         this.validade = validade;
-        this.doadorNome = doadorNome;
-        this.doadorContato = doadorContato;
+        this.doadorId = doadorId;
         this.status = status;
+    }
+
+    public void reservar(String instituicaoId) {
+
+        if (status != StatusDoacao.DISPONIVEL) {
+            throw new RegraNegocioException("Esta doação não está disponível.");
+        }
+
+        if (validade.isBefore(LocalDate.now())) {
+            throw new RegraNegocioException("Esta doação está vencida.");
+        }
+
+        reserva = new Reserva(instituicaoId, LocalDate.now());
+        status = StatusDoacao.RESERVADA;
+    }
+
+    public void registrarRetirada() {
+
+        if (status != StatusDoacao.RESERVADA) {
+            throw new RegraNegocioException("Somente doações reservadas podem ser retiradas.");
+        }
+
+        reserva.setDataRetirada(LocalDate.now());
+        status = StatusDoacao.RETIRADA;
     }
 
     public String getId() {
@@ -69,43 +91,19 @@ public class Doacao {
         this.validade = validade;
     }
 
-    public String getDoadorNome() {
-        return doadorNome;
+    public String getDoadorId() {
+        return doadorId;
     }
 
-    public void setDoadorNome(String doadorNome) {
-        this.doadorNome = doadorNome;
-    }
-
-    public String getDoadorContato() {
-        return doadorContato;
-    }
-
-    public void setDoadorContato(String doadorContato) {
-        this.doadorContato = doadorContato;
+    public void setDoadorId(String doadorId) {
+        this.doadorId = doadorId;
     }
 
     public StatusDoacao getStatus() {
         return status;
     }
 
-    public void setStatus(StatusDoacao status) {
-        this.status = status;
-    }
-
-    public String getReservadoPor() {
-        return reservadoPor;
-    }
-
-    public void setReservadoPor(String reservadoPor) {
-        this.reservadoPor = reservadoPor;
-    }
-
-    public String getContatoReserva() {
-        return contatoReserva;
-    }
-
-    public void setContatoReserva(String contatoReserva) {
-        this.contatoReserva = contatoReserva;
+    public Reserva getReserva() {
+        return reserva;
     }
 }

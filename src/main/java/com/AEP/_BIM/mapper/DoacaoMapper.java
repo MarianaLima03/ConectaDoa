@@ -2,17 +2,20 @@ package com.AEP._BIM.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.AEP._BIM.dto.DoacaoCreateRequest;
+import com.AEP._BIM.dto.DoacaoRequest;
 import com.AEP._BIM.dto.DoacaoResponse;
 import com.AEP._BIM.dto.DoacaoSummaryResponse;
-import com.AEP._BIM.dto.DoacaoUpdateRequest;
+import com.AEP._BIM.dto.ReservaResponse;
 import com.AEP._BIM.model.Doacao;
+import com.AEP._BIM.model.Doador;
+import com.AEP._BIM.model.Instituicao;
+import com.AEP._BIM.model.Reserva;
 import com.AEP._BIM.model.StatusDoacao;
 
 @Component
 public class DoacaoMapper {
 
-    public Doacao toModel(DoacaoCreateRequest request) {
+    public Doacao toModel(DoacaoRequest request) {
 
         return new Doacao(
                 null,
@@ -20,25 +23,26 @@ public class DoacaoMapper {
                 request.quantidade(),
                 request.unidade(),
                 request.validade(),
-                request.doadorNome(),
-                request.doadorContato(),
+                request.doadorId(),
                 StatusDoacao.DISPONIVEL
         );
     }
 
     public void updateModel(
-            DoacaoUpdateRequest request,
+            DoacaoRequest request,
             Doacao doacao) {
 
         doacao.setAlimento(request.alimento());
         doacao.setQuantidade(request.quantidade());
         doacao.setUnidade(request.unidade());
         doacao.setValidade(request.validade());
-        doacao.setDoadorNome(request.doadorNome());
-        doacao.setDoadorContato(request.doadorContato());
+        doacao.setDoadorId(request.doadorId());
     }
 
-    public DoacaoResponse toResponse(Doacao doacao) {
+    public DoacaoResponse toResponse(
+            Doacao doacao,
+            Doador doador,
+            Instituicao instituicao) {
 
         return new DoacaoResponse(
                 doacao.getId(),
@@ -46,11 +50,11 @@ public class DoacaoMapper {
                 doacao.getQuantidade(),
                 doacao.getUnidade(),
                 doacao.getValidade(),
-                doacao.getDoadorNome(),
-                doacao.getDoadorContato(),
+                doador.getId(),
+                doador.getNome(),
+                doador.getContato(),
                 doacao.getStatus(),
-                doacao.getReservadoPor(),
-                doacao.getContatoReserva()
+                toReservaResponse(doacao.getReserva(), instituicao)
         );
     }
 
@@ -61,6 +65,23 @@ public class DoacaoMapper {
                 doacao.getId(),
                 doacao.getAlimento(),
                 doacao.getStatus()
+        );
+    }
+
+    private ReservaResponse toReservaResponse(
+            Reserva reserva,
+            Instituicao instituicao) {
+
+        if (reserva == null) {
+            return null;
+        }
+
+        return new ReservaResponse(
+                instituicao.getId(),
+                instituicao.getNome(),
+                instituicao.getContato(),
+                reserva.getDataReserva(),
+                reserva.getDataRetirada()
         );
     }
 }

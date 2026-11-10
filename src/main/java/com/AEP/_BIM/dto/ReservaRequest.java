@@ -1,7 +1,8 @@
 package com.AEP._BIM.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record ReservaRequest(
-        String nome,
-        String contato
+        @NotBlank(message = "instituicaoId é obrigatório") String instituicaoId
 ) {
 }
