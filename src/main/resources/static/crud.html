@@ -11,95 +11,7 @@
 
     <title>CRUD de Doações - ConectaDoa</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background: #f5f7f5;
-            color: #222;
-        }
-
-        .wrap {
-            max-width: 1100px;
-            margin: auto;
-            padding: 32px;
-        }
-
-        h1,
-        h2 {
-            color: #237a46;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 24px;
-        }
-
-        .card {
-            background: #fff;
-            padding: 22px;
-            border-radius: 14px;
-            box-shadow: 0 4px 18px #0001;
-        }
-
-        label {
-            display: block;
-            margin-top: 12px;
-            font-weight: 700;
-        }
-
-        input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 7px;
-        }
-
-        button {
-            margin-top: 14px;
-            padding: 10px 14px;
-            border: 0;
-            border-radius: 8px;
-            background: #237a46;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .secondary {
-            background: #666;
-        }
-
-        .danger {
-            background: #b6403a;
-        }
-
-        .item {
-            border-bottom: 1px solid #ddd;
-            padding: 14px 0;
-        }
-
-        .actions button {
-            margin-right: 8px;
-        }
-
-        .msg {
-            margin-top: 12px;
-            color: #b6403a;
-        }
-
-        @media (max-width: 800px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="estilo.css">
 </head>
 
 <body>
@@ -108,7 +20,13 @@
 
     <h1>ConectaDoa — CRUD de Doações</h1>
 
-    <div class="grid">
+    <nav>
+        <a href="/">Início</a>
+        <a href="/doadores.html">Doadores</a>
+        <a href="/instituicoes.html">Instituições</a>
+    </nav>
+
+    <div class="grid" style="margin-top: 20px">
 
         <section class="card">
 
@@ -171,27 +89,15 @@
                         required
                 >
 
-                <label for="doadorNome">
-                    Nome do doador
+                <label for="doadorId">
+                    Doador
                 </label>
 
-                <input
-                        id="doadorNome"
-                        name="doadorNome"
-                        type="text"
+                <select
+                        id="doadorId"
+                        name="doadorId"
                         required
-                >
-
-                <label for="doadorContato">
-                    Contato do doador
-                </label>
-
-                <input
-                        id="doadorContato"
-                        name="doadorContato"
-                        type="text"
-                        required
-                >
+                ></select>
 
                 <button type="submit">
                     Salvar
@@ -222,6 +128,12 @@
                 Doações cadastradas
             </h2>
 
+            <label for="instituicaoId">
+                Instituição que vai reservar
+            </label>
+
+            <select id="instituicaoId"></select>
+
             <div
                     id="lista"
                     aria-live="polite"
@@ -236,6 +148,7 @@
 </main>
 
 
+<script src="api.js"></script>
 <script>
 
     const API = "/api/doacoes";
@@ -258,11 +171,11 @@
     const campoValidade =
         document.getElementById("validade");
 
-    const campoDoadorNome =
-        document.getElementById("doadorNome");
+    const campoDoador =
+        document.getElementById("doadorId");
 
-    const campoDoadorContato =
-        document.getElementById("doadorContato");
+    const campoInstituicao =
+        document.getElementById("instituicaoId");
 
     const tituloFormulario =
         document.getElementById("formTitle");
@@ -307,11 +220,8 @@
         campoValidade.value =
             doacao.validade;
 
-        campoDoadorNome.value =
-            doacao.doadorNome;
-
-        campoDoadorContato.value =
-            doacao.doadorContato;
+        campoDoador.value =
+            doacao.doadorId;
 
         tituloFormulario.textContent =
             "Editar doação";
@@ -363,6 +273,57 @@
     }
 
 
+    async function mudarStatus(url, dados) {
+
+        mensagem.textContent = "";
+
+        try {
+
+            await chamarApi(url, "PUT", dados);
+
+            await listarDoacoes();
+
+        } catch (erro) {
+
+            mensagem.textContent =
+                erro.message;
+        }
+    }
+
+
+    function preencherSelect(select, itens, textoVazio) {
+
+        select.replaceChildren();
+
+        if (itens.length === 0) {
+
+            select.add(new Option(textoVazio, ""));
+
+            return;
+        }
+
+        for (const item of itens) {
+            select.add(new Option(item.nome, item.id));
+        }
+    }
+
+
+    async function carregarOpcoes() {
+
+        preencherSelect(
+            campoDoador,
+            await chamarApi("/api/doadores"),
+            "Cadastre um doador primeiro"
+        );
+
+        preencherSelect(
+            campoInstituicao,
+            await chamarApi("/api/instituicoes"),
+            "Cadastre uma instituição primeiro"
+        );
+    }
+
+
     function criarItemDoacao(doacao) {
 
         const div =
@@ -393,11 +354,80 @@
             `Doador: ${doacao.doadorNome} — ${doacao.doadorContato}`;
 
 
+        const situacao =
+            document.createElement("p");
+
+        situacao.textContent =
+            `Status: ${doacao.status}`;
+
+
+        if (doacao.reserva) {
+
+            situacao.textContent +=
+                ` — ${doacao.reserva.instituicaoNome} (${doacao.reserva.instituicaoContato}), reservada em ${doacao.reserva.dataReserva}`;
+
+            if (doacao.reserva.dataRetirada) {
+
+                situacao.textContent +=
+                    `, retirada em ${doacao.reserva.dataRetirada}`;
+            }
+        }
+
+
         const acoes =
             document.createElement("div");
 
         acoes.className =
             "actions";
+
+
+        if (doacao.status === "DISPONIVEL") {
+
+            const botaoReservar =
+                document.createElement("button");
+
+            botaoReservar.type =
+                "button";
+
+            botaoReservar.textContent =
+                "Reservar";
+
+            botaoReservar.addEventListener(
+                "click",
+                () => mudarStatus(
+                    `${API}/${doacao.id}/reservar`,
+                    { instituicaoId: campoInstituicao.value }
+                )
+            );
+
+            acoes.appendChild(
+                botaoReservar
+            );
+        }
+
+
+        if (doacao.status === "RESERVADA") {
+
+            const botaoRetirar =
+                document.createElement("button");
+
+            botaoRetirar.type =
+                "button";
+
+            botaoRetirar.textContent =
+                "Registrar retirada";
+
+            botaoRetirar.addEventListener(
+                "click",
+                () => mudarStatus(
+                    `${API}/${doacao.id}/retirar`
+                )
+            );
+
+            acoes.appendChild(
+                botaoRetirar
+            );
+        }
 
 
         const botaoEditar =
@@ -454,6 +484,10 @@
 
         div.appendChild(
             doador
+        );
+
+        div.appendChild(
+            situacao
         );
 
         div.appendChild(
@@ -562,11 +596,8 @@
                 validade:
                     campoValidade.value,
 
-                doadorNome:
-                    campoDoadorNome.value,
-
-                doadorContato:
-                    campoDoadorContato.value
+                doadorId:
+                    campoDoador.value
             };
 
 
@@ -615,7 +646,13 @@
                         const erro =
                             await resposta.json();
 
-                        if (erro.message) {
+                        const camposInvalidos =
+                            Object.values(erro.fieldErrors || {});
+
+                        if (camposInvalidos.length > 0) {
+                            mensagemErro =
+                                camposInvalidos.join(", ");
+                        } else if (erro.message) {
                             mensagemErro =
                                 erro.message;
                         }
@@ -657,6 +694,13 @@
     window.addEventListener(
         "DOMContentLoaded",
         async () => {
+
+            try {
+                await carregarOpcoes();
+            } catch (erro) {
+                mensagem.textContent = erro.message;
+            }
+
             await listarDoacoes();
         }
     );

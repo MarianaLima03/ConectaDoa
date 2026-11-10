@@ -1,205 +1,156 @@
-# ConectaDoa — AEP MongoDB + Java 2026
+# ConectaDoa — AEP 2026.2
 
-Projeto baseado na mesma arquitetura didática do exemplo da disciplina, adaptado para o tema **doação de alimentos**.
+Sistema para conectar quem tem alimentos para doar a instituições que podem recebê-los. É a Prova de Conceito da AEP de Engenharia de Software (6º semestre).
 
 ## Problema e ODS
-O ConectaDoa busca reduzir o desperdício de alimentos e facilitar a divulgação de doações para pessoas e instituições interessadas.
 
-- ODS 2 — Fome Zero e Agricultura Sustentável
-- ODS 12 — Consumo e Produção Responsáveis
+Muito alimento em bom estado é jogado fora enquanto outras pessoas passam necessidade. Mercados e padarias costumam ter sobras, mas nem sempre têm um jeito simples de avisar instituições que poderiam buscar esses alimentos.
 
-## Stack
+- **ODS 2 — Fome Zero e Agricultura Sustentável:** facilita a chegada dos alimentos a quem precisa.
+- **ODS 12 — Consumo e Produção Responsáveis:** ajuda a reduzir o desperdício.
+
+## Tecnologias
+
 - Java 21
-- Spring Boot 3.5.16
-- Spring Web
-- Spring Data MongoDB
-- Jakarta Validation
-- Springdoc OpenAPI / Swagger
-- JUnit 5 / Mockito / MockMvc
+- Spring Boot 3.5.16 (Web, Data MongoDB e Validation)
+- MongoDB
+- Springdoc OpenAPI (Swagger)
+- HTML, CSS e JavaScript
+- JUnit 5, Mockito, MockMvc e mongo-java-server
 - JaCoCo
+- Maven (com Maven Wrapper)
 
-## Arquitetura
+## Como executar
 
-```text
-JSON -> Controller -> Request DTO -> Service -> Repository -> MongoDB
-MongoDB -> Model -> Service -> Mapper -> Response DTO -> Controller -> JSON
+Você precisa ter instalado:
+
+- Java 21 (JDK);
+- MongoDB rodando em `localhost:27017`.
+
+Na pasta do projeto, para subir com dados de exemplo:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-## Banco NoSQL
-Banco: `conectadoa`
+No Windows (CMD ou PowerShell), troque `./mvnw` por `mvnw.cmd`. No PowerShell, coloque o `-D...` entre aspas:
 
-Única coleção: `doacoes`
+```bash
+mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
 
-## Execução
-Com o MongoDB local em `localhost:27017`, execute a aplicação `ConectaDoaApplication`.
+Para subir sem dados de exemplo, tire o `-Dspring-boot.run.profiles=dev`.
 
-A aplicação usa a porta `8080`.
+Depois é só acessar:
 
-- Página inicial: http://localhost:8080/
-- CRUD web: http://localhost:8080/crud.html
-- Swagger: http://localhost:8080/swagger-ui.html
+| Página | Endereço |
+|---|---|
+| Início | http://localhost:8080/ |
+| Doações | http://localhost:8080/crud.html |
+| Doadores | http://localhost:8080/doadores.html |
+| Instituições | http://localhost:8080/instituicoes.html |
+| Swagger | http://localhost:8080/swagger-ui.html |
 
-## Endpoints
-| Método | Endpoint | Função |
+## Como usar
+
+1. Cadastre um doador, com pelo menos um endereço.
+2. Cadastre uma instituição.
+3. Em Doações, cadastre o alimento e escolha o doador.
+4. Escolha a instituição e clique em **Reservar**.
+5. Quando o alimento for buscado, clique em **Registrar retirada**.
+
+O status da doação segue este caminho:
+
+```text
+DISPONIVEL -> RESERVADA -> RETIRADA
+```
+
+## Estrutura do banco
+
+Banco `conectadoa`, com três coleções:
+
+| Coleção | Conteúdo | Tipo de dado |
 |---|---|---|
-| GET | `/api/doacoes` | Lista resumida |
-| GET | `/api/doacoes/{id}` | Busca completa |
-| GET | `/api/doacoes/disponiveis` | Lista doações disponíveis |
-| POST | `/api/doacoes` | Cria uma doação |
-| PUT | `/api/doacoes/{id}` | Atualiza uma doação |
-| PUT | `/api/doacoes/{id}/reservar` | Reserva uma doação |
-| DELETE | `/api/doacoes/{id}` | Exclui uma doação |
+| `doadores` | nome, contato e endereços | lista de subdocumentos em `enderecos` |
+| `instituicoes` | nome, contato e endereço | subdocumento em `endereco` |
+| `doacoes` | alimento, quantidade, validade, status e reserva | referência `doadorId` e subdocumento `reserva` com `instituicaoId` |
 
-## Exemplo POST
+Exemplos de documentos e a explicação da modelagem estão na [documentação técnica](docs/DOCUMENTACAO_TECNICA.md).
+
+## Exemplo de uso da API
+
+Criar um doador em `POST /api/doadores`:
+
+```json
+{
+  "nome": "Mercado Central",
+  "contato": "(44) 99999-9999",
+  "enderecos": [
+    { "rua": "Av. Brasil, 100", "cidade": "Maringá", "estado": "PR" }
+  ]
+}
+```
+
+Criar uma doação em `POST /api/doacoes`:
 
 ```json
 {
   "alimento": "Arroz",
   "quantidade": 10,
   "unidade": "kg",
-  "validade": "2026-09-20",
-  "doadorNome": "Mercado Central",
-  "doadorContato": "(44) 99999-9999"
+  "validade": "2027-03-20",
+  "doadorId": "ID_DO_DOADOR"
 }
 ```
 
-Toda nova doação é cadastrada com status inicial:
-
-```text
-DISPONIVEL
-```
-
-## Status da doação
-
-Os possíveis status são:
-
-```text
-DISPONIVEL
-RESERVADA
-RETIRADA
-```
-
-## Reserva
-
-Exemplo de reserva:
+Reservar em `PUT /api/doacoes/{id}/reservar`:
 
 ```json
 {
-  "nome": "Instituto Esperança",
-  "contato": "(44) 98888-8888"
+  "instituicaoId": "ID_DA_INSTITUICAO"
 }
 ```
 
-Após a reserva, o status da doação passa para:
-
-```text
-RESERVADA
-```
-
-## Organização do código
-
-O projeto está dividido em camadas:
-
-- `controller` — recebe as requisições HTTP;
-- `dto` — define os dados de entrada e saída;
-- `service` — concentra as regras de negócio;
-- `repository` — realiza o acesso ao MongoDB;
-- `mapper` — converte Model e DTO;
-- `model` — representa os objetos da aplicação;
-- `exception` — trata erros e exceções;
-- `configuration` — configura componentes da aplicação.
-
-## Model
-
-A classe principal do projeto é `Doacao`.
-
-Exemplo:
-
-```java
-@Document(collection = "doacoes")
-public class Doacao {
-```
-
-A anotação indica que os objetos serão armazenados na coleção:
-
-```text
-doacoes
-```
-
-## Repository
-
-O acesso ao MongoDB é realizado pelo Spring Data:
-
-```java
-public interface DoacaoRepository
-        extends MongoRepository<Doacao, String> {
-}
-```
-
-Também existe a consulta por status:
-
-```java
-List<Doacao> findByStatus(StatusDoacao status);
-```
-
-Ela é utilizada para localizar apenas as doações que estão disponíveis.
-
-## Service
-
-O `Service` contém as principais regras de negócio.
-
-Na reserva, por exemplo, o sistema verifica se a doação está disponível:
-
-```java
-if (doacao.getStatus() != StatusDoacao.DISPONIVEL) {
-    throw new RuntimeException(
-        "Esta doação não está disponível."
-    );
-}
-```
-
-Se estiver disponível, os dados da reserva são registrados e o status é alterado:
-
-```java
-doacao.setReservadoPor(request.nome());
-doacao.setContatoReserva(request.contato());
-doacao.setStatus(StatusDoacao.RESERVADA);
-```
+Registrar a retirada em `PUT /api/doacoes/{id}/retirar`, sem corpo.
 
 ## Testes e cobertura
 
-Os testes automatizados utilizam:
-
-- JUnit 5
-- Mockito
-- MockMvc
-
-Para executar:
+Os testes não precisam do MongoDB instalado, porque o teste de integração usa um servidor em memória.
 
 ```bash
-mvn clean verify
+./mvnw clean verify
 ```
 
-A cobertura é medida pelo JaCoCo.
+O relatório do JaCoCo fica em `target/site/jacoco/index.html`.
 
-O requisito mínimo da AEP é:
+- Mínimo exigido na AEP: 70% (o build falha abaixo disso).
+- Resultado desta versão: 62 testes passando e 100% de cobertura de linhas.
+
+As classes `Application` e `configuration` ficam fora da medição, porque não têm regra de negócio.
+
+## Organização do código
 
 ```text
-70%
+src/main/java/com/AEP/_BIM
+├── controller      endpoints REST
+├── dto             dados de entrada e saída
+├── service         casos de uso
+├── model           documentos do banco e regras da doação
+├── repository      acesso ao MongoDB
+├── mapper          conversão entre Model e DTO
+├── exception       erros da aplicação
+└── configuration   Swagger e dados de exemplo
 ```
 
-A cobertura atual do projeto é:
+## Metodologia de trabalho
 
-```text
-88%
-```
+Usamos Kanban, com um quadro de tarefas nas colunas A fazer, Fazendo e Feito.
 
-O relatório pode ser acessado em:
+Quadro de tarefas: https://github.com/users/MarianaLima03/projects/2
 
-```text
-target/site/jacoco/index.html
-```
+## Versões
 
-## Versionamento
-
-O projeto utiliza Git e GitHub para controle de versão e registro da evolução da PoC.
+| Entrega | Tag | Principais pontos |
+|---|---|---|
+| 1ª | `v1.0` | CRUD de doações com uma coleção |
+| 2ª | `v2.0` | três coleções relacionadas, documentos aninhados, fluxo de retirada e novas telas |

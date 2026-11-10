@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instituições - ConectaDoa</title>
+    <link rel="stylesheet" href="estilo.css">
+</head>
+
+<body>
+
+<main class="wrap">
+
+    <h1>ConectaDoa — Instituições</h1>
+
+    <nav>
+        <a href="/">Início</a>
+        <a href="/crud.html">Doações</a>
+        <a href="/doadores.html">Doadores</a>
+    </nav>
+
+    <div class="grid" style="margin-top: 20px">
+
+        <section class="card">
+
+            <h2 id="formTitle">Nova instituição</h2>
+
+            <form id="form">
+
+                <input type="hidden" id="id">
+
+                <label for="nome">Nome</label>
+                <input id="nome" type="text" required>
+
+                <label for="contato">Contato</label>
+                <input id="contato" type="text" required>
+
+                <label for="rua">Rua</label>
+                <input id="rua" type="text" required>
+
+                <label for="cidade">Cidade</label>
+                <input id="cidade" type="text" required>
+
+                <label for="estado">Estado</label>
+                <input id="estado" type="text" required>
+
+                <button type="submit">Salvar</button>
+                <button type="button" id="btnCancelar" class="secondary">Cancelar</button>
+
+                <div class="msg" id="msg" role="alert" aria-live="polite"></div>
+
+            </form>
+
+        </section>
+
+        <section class="card">
+            <h2>Instituições cadastradas</h2>
+            <div id="lista" aria-live="polite">Carregando...</div>
+        </section>
+
+    </div>
+
+</main>
+
+<script src="api.js"></script>
+<script>
+
+    const API = "/api/instituicoes";
+
+    const form = document.getElementById("form");
+    const campoId = document.getElementById("id");
+    const campoNome = document.getElementById("nome");
+    const campoContato = document.getElementById("contato");
+    const campoRua = document.getElementById("rua");
+    const campoCidade = document.getElementById("cidade");
+    const campoEstado = document.getElementById("estado");
+    const tituloFormulario = document.getElementById("formTitle");
+    const mensagem = document.getElementById("msg");
+    const lista = document.getElementById("lista");
+
+
+    function limparFormulario() {
+
+        form.reset();
+        campoId.value = "";
+        tituloFormulario.textContent = "Nova instituição";
+        mensagem.textContent = "";
+    }
+
+
+    function editarInstituicao(instituicao) {
+
+        campoId.value = instituicao.id;
+        campoNome.value = instituicao.nome;
+        campoContato.value = instituicao.contato;
+        campoRua.value = instituicao.endereco.rua;
+        campoCidade.value = instituicao.endereco.cidade;
+        campoEstado.value = instituicao.endereco.estado;
+
+        tituloFormulario.textContent = "Editar instituição";
+        mensagem.textContent = "";
+    }
+
+
+    async function excluirInstituicao(id) {
+
+        if (!window.confirm("Deseja realmente excluir esta instituição?")) {
+            return;
+        }
+
+        try {
+            await chamarApi(`${API}/${id}`, "DELETE");
+            await listarInstituicoes();
+        } catch (erro) {
+            mensagem.textContent = erro.message;
+        }
+    }
+
+
+    function criarItemInstituicao(instituicao) {
+
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = instituicao.nome;
+
+        const contato = document.createElement("p");
+        contato.textContent = `Contato: ${instituicao.contato}`;
+
+        const endereco = document.createElement("p");
+        endereco.textContent =
+            `${instituicao.endereco.rua} — ${instituicao.endereco.cidade}/${instituicao.endereco.estado}`;
+
+        const botaoEditar = document.createElement("button");
+        botaoEditar.type = "button";
+        botaoEditar.textContent = "Editar";
+        botaoEditar.addEventListener("click", () => editarInstituicao(instituicao));
+
+        const botaoExcluir = document.createElement("button");
+        botaoExcluir.type = "button";
+        botaoExcluir.textContent = "Excluir";
+        botaoExcluir.className = "danger";
+        botaoExcluir.addEventListener("click", () => excluirInstituicao(instituicao.id));
+
+        const acoes = document.createElement("div");
+        acoes.className = "actions";
+        acoes.append(botaoEditar, botaoExcluir);
+
+        div.append(titulo, contato, endereco, acoes);
+
+        return div;
+    }
+
+
+    async function listarInstituicoes() {
+
+        try {
+
+            const instituicoes = await chamarApi(API);
+
+            lista.replaceChildren();
+
+            if (instituicoes.length === 0) {
+                lista.textContent = "Nenhuma instituição cadastrada.";
+                return;
+            }
+
+            instituicoes.forEach((instituicao) =>
+                lista.appendChild(criarItemInstituicao(instituicao))
+            );
+
+        } catch (erro) {
+            lista.textContent = "Não foi possível carregar as instituições.";
+        }
+    }
+
+
+    form.addEventListener("submit", async (evento) => {
+
+        evento.preventDefault();
+
+        mensagem.textContent = "";
+
+        const dados = {
+            nome: campoNome.value,
+            contato: campoContato.value,
+            endereco: {
+                rua: campoRua.value,
+                cidade: campoCidade.value,
+                estado: campoEstado.value
+            }
+        };
+
+        const id = campoId.value;
+
+        try {
+
+            await chamarApi(
+                id ? `${API}/${id}` : API,
+                id ? "PUT" : "POST",
+                dados
+            );
+
+            limparFormulario();
+
+            await listarInstituicoes();
+
+        } catch (erro) {
+            mensagem.textContent = erro.message;
+        }
+    });
+
+
+    document.getElementById("btnCancelar")
+        .addEventListener("click", limparFormulario);
+
+    listarInstituicoes();
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doadores - ConectaDoa</title>
+    <link rel="stylesheet" href="estilo.css">
+</head>
+
+<body>
+
+<main class="wrap">
+
+    <h1>ConectaDoa — Doadores</h1>
+
+    <nav>
+        <a href="/">Início</a>
+        <a href="/crud.html">Doações</a>
+        <a href="/instituicoes.html">Instituições</a>
+    </nav>
+
+    <div class="grid" style="margin-top: 20px">
+
+        <section class="card">
+
+            <h2 id="formTitle">Novo doador</h2>
+
+            <form id="form">
+
+                <input type="hidden" id="id">
+
+                <label for="nome">Nome</label>
+                <input id="nome" type="text" required>
+
+                <label for="contato">Contato</label>
+                <input id="contato" type="text" required>
+
+                <h3>Endereços</h3>
+                <div id="enderecos"></div>
+
+                <button type="button" id="btnEndereco" class="secondary">
+                    Adicionar endereço
+                </button>
+
+                <br>
+
+                <button type="submit">Salvar</button>
+                <button type="button" id="btnCancelar" class="secondary">Cancelar</button>
+
+                <div class="msg" id="msg" role="alert" aria-live="polite"></div>
+
+            </form>
+
+        </section>
+
+        <section class="card">
+            <h2>Doadores cadastrados</h2>
+            <div id="lista" aria-live="polite">Carregando...</div>
+        </section>
+
+    </div>
+
+</main>
+
+<script src="api.js"></script>
+<script>
+
+    const API = "/api/doadores";
+
+    const form = document.getElementById("form");
+    const campoId = document.getElementById("id");
+    const campoNome = document.getElementById("nome");
+    const campoContato = document.getElementById("contato");
+    const areaEnderecos = document.getElementById("enderecos");
+    const tituloFormulario = document.getElementById("formTitle");
+    const mensagem = document.getElementById("msg");
+    const lista = document.getElementById("lista");
+
+
+    function criarCampo(rotulo, classe, valor) {
+
+        const label = document.createElement("label");
+        label.textContent = rotulo;
+
+        const input = document.createElement("input");
+        input.className = classe;
+        input.required = true;
+        input.value = valor;
+
+        label.appendChild(input);
+
+        return label;
+    }
+
+
+    function adicionarEndereco(endereco = { rua: "", cidade: "", estado: "" }) {
+
+        const bloco = document.createElement("div");
+        bloco.className = "endereco";
+
+        const botaoRemover = document.createElement("button");
+        botaoRemover.type = "button";
+        botaoRemover.className = "danger";
+        botaoRemover.textContent = "Remover endereço";
+        botaoRemover.addEventListener("click", () => bloco.remove());
+
+        bloco.append(
+            criarCampo("Rua", "rua", endereco.rua),
+            criarCampo("Cidade", "cidade", endereco.cidade),
+            criarCampo("Estado", "estado", endereco.estado),
+            botaoRemover
+        );
+
+        areaEnderecos.appendChild(bloco);
+    }
+
+
+    function lerEnderecos() {
+
+        return [...areaEnderecos.querySelectorAll(".endereco")].map((bloco) => ({
+            rua: bloco.querySelector(".rua").value,
+            cidade: bloco.querySelector(".cidade").value,
+            estado: bloco.querySelector(".estado").value
+        }));
+    }
+
+
+    function limparFormulario() {
+
+        form.reset();
+        campoId.value = "";
+        areaEnderecos.replaceChildren();
+        adicionarEndereco();
+        tituloFormulario.textContent = "Novo doador";
+        mensagem.textContent = "";
+    }
+
+
+    function editarDoador(doador) {
+
+        campoId.value = doador.id;
+        campoNome.value = doador.nome;
+        campoContato.value = doador.contato;
+
+        areaEnderecos.replaceChildren();
+        doador.enderecos.forEach(adicionarEndereco);
+
+        tituloFormulario.textContent = "Editar doador";
+        mensagem.textContent = "";
+    }
+
+
+    async function excluirDoador(id) {
+
+        if (!window.confirm("Deseja realmente excluir este doador?")) {
+            return;
+        }
+
+        try {
+            await chamarApi(`${API}/${id}`, "DELETE");
+            await listarDoadores();
+        } catch (erro) {
+            mensagem.textContent = erro.message;
+        }
+    }
+
+
+    function criarItemDoador(doador) {
+
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = doador.nome;
+
+        const contato = document.createElement("p");
+        contato.textContent = `Contato: ${doador.contato}`;
+
+        const enderecos = document.createElement("ul");
+
+        for (const endereco of doador.enderecos) {
+            const linha = document.createElement("li");
+            linha.textContent = `${endereco.rua} — ${endereco.cidade}/${endereco.estado}`;
+            enderecos.appendChild(linha);
+        }
+
+        const botaoEditar = document.createElement("button");
+        botaoEditar.type = "button";
+        botaoEditar.textContent = "Editar";
+        botaoEditar.addEventListener("click", () => editarDoador(doador));
+
+        const botaoExcluir = document.createElement("button");
+        botaoExcluir.type = "button";
+        botaoExcluir.textContent = "Excluir";
+        botaoExcluir.className = "danger";
+        botaoExcluir.addEventListener("click", () => excluirDoador(doador.id));
+
+        const acoes = document.createElement("div");
+        acoes.className = "actions";
+        acoes.append(botaoEditar, botaoExcluir);
+
+        div.append(titulo, contato, enderecos, acoes);
+
+        return div;
+    }
+
+
+    async function listarDoadores() {
+
+        try {
+
+            const doadores = await chamarApi(API);
+
+            lista.replaceChildren();
+
+            if (doadores.length === 0) {
+                lista.textContent = "Nenhum doador cadastrado.";
+                return;
+            }
+
+            doadores.forEach((doador) => lista.appendChild(criarItemDoador(doador)));
+
+        } catch (erro) {
+            lista.textContent = "Não foi possível carregar os doadores.";
+        }
+    }
+
+
+    form.addEventListener("submit", async (evento) => {
+
+        evento.preventDefault();
+
+        mensagem.textContent = "";
+
+        const dados = {
+            nome: campoNome.value,
+            contato: campoContato.value,
+            enderecos: lerEnderecos()
+        };
+
+        const id = campoId.value;
+
+        try {
+
+            await chamarApi(
+                id ? `${API}/${id}` : API,
+                id ? "PUT" : "POST",
+                dados
+            );
+
+            limparFormulario();
+
+            await listarDoadores();
+
+        } catch (erro) {
+            mensagem.textContent = erro.message;
+        }
+    });
+
+
+    document.getElementById("btnEndereco")
+        .addEventListener("click", () => adicionarEndereco());
+
+    document.getElementById("btnCancelar")
+        .addEventListener("click", limparFormulario);
+
+    limparFormulario();
+    listarDoadores();
+
+</script>
+
+</body>
+
+</html>
